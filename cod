@@ -37,3 +37,31 @@ class Item(Base):
     name = Column(String, index=True)
     description = Column(String)
 
+# Criar o banco de dados
+Base.metadata.create_all(bind=engine)
+
+# Pydantic Models
+class ItemCreate(BaseModel):
+    name: str
+    description: str
+
+class Item(ItemCreate):
+    id: int
+
+# Configuração do Password Hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Função para verificar e gerar JWT
+def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + expires_delta
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
