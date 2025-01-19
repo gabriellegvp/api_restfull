@@ -1,0 +1,23 @@
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import sessionmaker
+import jwt
+
+app = FastAPI()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+# Exemplos de rotas:
+@app.post("/token")
+def generate_token():
+    # Geração de JWT
+    pass
+
+@app.post("/payments/stripe")
+def create_payment():
+    # Integração com Stripe
+    pass
+
+@app.get("/items")
+def read_items():
+    # CRUD básico
+    pass
