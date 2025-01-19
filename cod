@@ -101,3 +101,31 @@ def generate_token(username: str, password: str):
     access_token = create_access_token(data={"sub": username})
     return {"access_token": access_token, "token_type": "bearer"}
 
+# CRUD - Listar Itens
+@app.get("/items", response_model=list[Item])
+def read_items(db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
+    items = db.query(Item).all()
+    return items
+
+# CRUD - Criar Item
+@app.post("/items", response_model=Item)
+def create_item(item: ItemCreate, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
+    db_item = Item(name=item.name, description=item.description)
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+# Criar pagamento via Stripe
+@app.post("/payments/stripe")
+def create_payment(amount: int, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
+    try:
+        # Criação do pagamento no Stripe
+        payment_intent = stripe.PaymentIntent.create(
+            amount=amount,
+            currency="usd",
+            payment_method_types=["card"],
+        )
+        return {"client_secret": payment_intent.client_secret}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
